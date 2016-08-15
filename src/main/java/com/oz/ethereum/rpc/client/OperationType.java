@@ -1,4 +1,4 @@
-package com.oz.ethereum.rpc;
+package com.oz.ethereum.rpc.client;
 
 /**
  * Created at 8/12/16, 23:48.

@@ -1,6 +1,8 @@
 package com.oz.ethereum.rpc.client.serialize.annotations;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
@@ -10,16 +12,27 @@ import java.lang.annotation.Target;
  * @since 0.0.1
  */
 @Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
 public @interface MethodConfiguration {
+
+    /**
+     * (Optional) Id.
+     * @return
+     */
+    public String id();
 
     /**
      * (Optional) Method name, is required only for MethodType.OUT
      * @return
      */
-    String name() default "";
+    public String methodName();
 
-    SolidityParameter[] inParameters() default {};
+    /**
+     * Relation between the attribute class name and the solidity type argument. The order is very important.
+     * @return Array of parameters to send.
+     */
+    public SolidityParameter[] inParameters() default {};
 
-    SolidityParameter[] outParameters() default {};
+    public SolidityParameter[] outParameters() default {};
 
 }

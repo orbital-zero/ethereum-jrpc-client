@@ -3,8 +3,8 @@ package com.oz.ethereum.rpc.client.serialize;
 import com.oz.ethereum.rpc.client.serialize.ConfigurationsLoader;
 
 /**
- * Created at 8/14/16, 22:35.
  *
+ * Created at 8/14/16, 22:35.
  * @author <a href="sock.sqt@gmail.com">sockosg</a>
  * @since 1.0
  */
@@ -24,7 +24,7 @@ public class XmlConfigurationsLoader implements ConfigurationsLoader {
     }
 
     @Override
-    public void loadConfigurations() {
+    public void loadConfigurations() throws ClassNotFoundException {
         // TODO
     }
 

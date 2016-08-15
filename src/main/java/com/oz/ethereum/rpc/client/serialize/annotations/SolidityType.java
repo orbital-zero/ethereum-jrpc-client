@@ -8,10 +8,21 @@ package com.oz.ethereum.rpc.client.serialize.annotations;
  */
 public enum SolidityType {
 
-    UINT, UINT_8, UINT_32, UINT_256,
-    STRING, BYTES,
-    BOOL,
-    ADDRESS
+    UINT("uint"), UINT_8("uint8"), UINT_32("unit32"), UINT_256("uint256"),
+    STRING("string"), BYTES("bytes"),
+    BOOL("bool"),
+    ADDRESS("address")
     ;
+
+    private String solidityType;
+
+    private SolidityType(String solidityType) {
+        this.solidityType = solidityType;
+    }
+
+    @Override
+    public String toString() {
+        return this.solidityType;
+    }
 
 }

@@ -11,6 +11,6 @@ public interface ConfigurationsLoader {
     void setPackageToScan(String setPackageToScan);
     void setPackagesToScan(String... setPackagesToScan);
 
-    void loadConfigurations();
+    void loadConfigurations() throws ClassNotFoundException;
 
 }

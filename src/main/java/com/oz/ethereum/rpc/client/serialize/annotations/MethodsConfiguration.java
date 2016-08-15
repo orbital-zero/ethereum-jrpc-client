@@ -1,6 +1,8 @@
 package com.oz.ethereum.rpc.client.serialize.annotations;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
@@ -9,6 +11,7 @@ import java.lang.annotation.Target;
  * @author <a href="sock.sqt@gmail.com">sockosg</a>
  * @since 1.0
  */
+@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface MethodsConfiguration {
 

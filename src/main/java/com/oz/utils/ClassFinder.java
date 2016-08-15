@@ -1,8 +1,12 @@
 package com.oz.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 /**
@@ -12,41 +16,56 @@ import java.util.List;
  */
 public class ClassFinder {
 
-    private static final char PKG_SEPARATOR = '.';
+    /**
+     * Scans all classes accessible from the context class loader which belong to the given package and subpackages.
+     * @param packageName - The base package
+     * @return The classes
+     * @throws ClassNotFoundException
+     */
+    public static List<Class> getClasses(String packageName) throws ClassNotFoundException {
+        List<Class> classes = new ArrayList<>();
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        assert classLoader != null;
+        String path = packageName.replace('.', '/');
+        Enumeration<URL> resources = null;
 
-    private static final char DIR_SEPARATOR = '/';
-
-    private static final String CLASS_FILE_SUFFIX = ".class";
-
-    private static final String BAD_PACKAGE_ERROR = "Unable to get resources from path '%s'. Are you sure the package '%s' exists?";
-
-    public static List<Class<?>> find(String scannedPackage) {
-        String scannedPath = scannedPackage.replace(PKG_SEPARATOR, DIR_SEPARATOR);
-        URL scannedUrl = Thread.currentThread().getContextClassLoader().getResource(scannedPath);
-        if (scannedUrl == null) {
-            throw new IllegalArgumentException(String.format(BAD_PACKAGE_ERROR, scannedPath, scannedPackage));
+        try {
+            resources = classLoader.getResources(path);
+        } catch (IOException ioExc) {
+            // TODO : Print warning
+            return classes;
         }
-        File scannedDir = new File(scannedUrl.getFile());
-        List<Class<?>> classes = new ArrayList<>();
-        for (File file : scannedDir.listFiles()) {
-            classes.addAll(find(file, scannedPackage));
+
+        List<File> dirs = new ArrayList<>();
+        while (resources.hasMoreElements()) {
+            URL resource = resources.nextElement();
+            dirs.add(new File(resource.getFile()));
+        }
+        for (File directory : dirs) {
+            classes.addAll(findClasses(directory, packageName));
         }
         return classes;
     }
 
-    private static List<Class<?>> find(File file, String scannedPackage) {
-        List<Class<?>> classes = new ArrayList<>();
-        String resource = scannedPackage + PKG_SEPARATOR + file.getName();
-        if (file.isDirectory()) {
-            for (File child : file.listFiles()) {
-                classes.addAll(find(child, resource));
-            }
-        } else if (resource.endsWith(CLASS_FILE_SUFFIX)) {
-            int endIndex = resource.length() - CLASS_FILE_SUFFIX.length();
-            String className = resource.substring(0, endIndex);
-            try {
-                classes.add(Class.forName(className));
-            } catch (ClassNotFoundException ignore) {
+    /**
+     * Recursive method used to find all classes in a given directory and subdirs.
+     * @param directory - The base directory
+     * @param packageName - The package name for classes found inside the base directory
+     * @return The classes
+     * @throws ClassNotFoundException
+     */
+    public static List<Class> findClasses(File directory, String packageName) throws ClassNotFoundException {
+        List<Class> classes = new ArrayList<>();
+        if (!directory.exists()) {
+            return classes;
+        }
+        File[] files = directory.listFiles();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                assert !file.getName().contains(".");
+                classes.addAll(findClasses(file, packageName + "." + file.getName()));
+            } else if (file.getName().endsWith(".class")) {
+                classes.add(Class.forName(packageName + '.' + file.getName().replace(".class", "")));
             }
         }
         return classes;
