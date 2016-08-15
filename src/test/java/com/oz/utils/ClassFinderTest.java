@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 /**
  *
  * <p><b>Created:</b> 15/08/16, 10:38 AM</p>
- * @author <a href="mailto:samuel.quintana@globant.com">samuel</a>
+ * @author <a href="mailto:sock.sqt@gmail.com">samuel</a>
  * @since 0.1.0
  */
 public class ClassFinderTest {

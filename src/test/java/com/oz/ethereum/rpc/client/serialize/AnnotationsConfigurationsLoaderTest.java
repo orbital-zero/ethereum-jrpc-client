@@ -8,7 +8,7 @@ import static org.junit.Assert.*;
 /**
  * <p><b>Created:</b> 15/08/16, 11:24 AM</p>
  *
- * @author <a href="mailto:samuel.quintana@globant.com">samuel</a>
+ * @author <a href="mailto:sock.sqt@gmail.com">samuel</a>
  * @since 1.0.0
  */
 public class AnnotationsConfigurationsLoaderTest {
