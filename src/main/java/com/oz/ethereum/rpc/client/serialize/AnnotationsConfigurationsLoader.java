@@ -71,6 +71,11 @@ public class AnnotationsConfigurationsLoader implements ConfigurationsLoader {
         }
     }
 
+    @Override
+    public Configuration getConfigs(String id) {
+        return this.reader.getConfigs().get(id);
+    }
+
     private void createConfiguration(Class clazz) {
         if (clazz.isAnnotationPresent(MethodsConfiguration.class)) {
             this.reader.createComplexConfiguration(clazz);

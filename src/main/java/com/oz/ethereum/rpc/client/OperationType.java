@@ -8,13 +8,19 @@ package com.oz.ethereum.rpc.client;
  */
 public enum OperationType {
 
-    SEND_RAW_TRANSACTION("eth_sendRawTransaction")
+    CALL("call"),
+    SEND_RAW_TRANSACTION("eth_sendRawTransaction"),
     ;
 
     private String operationType;
 
     private OperationType(String operationType) {
         this.operationType = this.operationType;
+    }
+
+    @Override
+    public String toString() {
+        return this.operationType;
     }
 
 }

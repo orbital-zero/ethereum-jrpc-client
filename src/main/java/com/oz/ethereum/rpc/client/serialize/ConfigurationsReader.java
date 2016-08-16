@@ -18,6 +18,8 @@ import java.util.Map;
  */
 public class ConfigurationsReader {
 
+
+
     @Getter
     private Map<String, Configuration> configs;
 

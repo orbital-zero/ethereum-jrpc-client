@@ -28,4 +28,9 @@ public class XmlConfigurationsLoader implements ConfigurationsLoader {
         // TODO
     }
 
+    @Override
+    public Configuration getConfigs(String id) {
+        return null;
+    }
+
 }

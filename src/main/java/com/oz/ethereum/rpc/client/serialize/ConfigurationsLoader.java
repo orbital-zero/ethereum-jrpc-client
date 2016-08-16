@@ -13,4 +13,6 @@ public interface ConfigurationsLoader {
 
     void loadConfigurations() throws ClassNotFoundException;
 
+    Configuration getConfigs(String id);
+
 }
