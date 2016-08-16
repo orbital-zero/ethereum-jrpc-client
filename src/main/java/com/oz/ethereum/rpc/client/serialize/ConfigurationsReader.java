@@ -2,20 +2,23 @@ package com.oz.ethereum.rpc.client.serialize;
 
 import com.oz.encrypt.KeccakSigner;
 import com.oz.ethereum.rpc.client.serialize.annotations.MethodConfiguration;
+import com.oz.ethereum.rpc.client.serialize.annotations.MethodsConfiguration;
 import com.oz.ethereum.rpc.client.serialize.annotations.SolidityParameter;
 import com.oz.utils.ArrayUtils;
+import lombok.Getter;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <p><b>Created:</b> 15/08/16, 11:38 AM</p>
  *
+ * <p><b>Created:</b> 15/08/16, 11:38 AM</p>
  * @author <a href="mailto:sock.sqt@gmail.com">samuel</a>
  * @since 1.0
  */
 public class ConfigurationsReader {
 
+    @Getter
     private Map<String, Configuration> configs;
 
     public ConfigurationsReader() {
@@ -24,20 +27,30 @@ public class ConfigurationsReader {
     }
 
     public void createSimpleConfiguration(Class clazz) {
-        MethodConfiguration annotationMethodConfig = (MethodConfiguration) clazz.getAnnotation(MethodConfiguration.class);
+        MethodConfiguration methodConfig = (MethodConfiguration) clazz.getAnnotation(MethodConfiguration.class);
+        this.createSimpleConfiguration(methodConfig);
+    }
 
+    public void createComplexConfiguration(Class clazz) {
+        MethodsConfiguration methodsConfig = (MethodsConfiguration) clazz.getAnnotation(MethodsConfiguration.class);
+        for (MethodConfiguration methodConfig : methodsConfig.configurations()) {
+            this.createSimpleConfiguration(methodConfig);
+        }
+    }
+
+    private void createSimpleConfiguration(MethodConfiguration methodConfig) {
         Configuration config = new Configuration();
-        this.configs.put(annotationMethodConfig.id(), config);
+        this.configs.put(methodConfig.id(), config);
 
         // Processing IN parameters [methodName(uint,address)]
-        if (ArrayUtils.isNotEmpty(annotationMethodConfig.inParameters())) {
-            StringBuilder def = new StringBuilder(annotationMethodConfig.methodName());
+        if (ArrayUtils.isNotEmpty(methodConfig.inParameters())) {
+            StringBuilder def = new StringBuilder(methodConfig.methodName());
             def.append("(");
-            String prefix = "";
+            String comma = "";
 
-            for (SolidityParameter annotationParameter : annotationMethodConfig.inParameters()) {
-                def.append(prefix);
-                prefix = ",";
+            for (SolidityParameter annotationParameter : methodConfig.inParameters()) {
+                def.append(comma);
+                comma = ",";
                 def.append(annotationParameter.type());
 
                 config.addInParameter(annotationParameter.name(), annotationParameter.type());
@@ -50,15 +63,15 @@ public class ConfigurationsReader {
         }
 
         // Processing OUT parameters [(uint,address)]
-        if (ArrayUtils.isNotEmpty(annotationMethodConfig.outParameters())) {
+        if (ArrayUtils.isNotEmpty(methodConfig.outParameters())) {
             StringBuilder def = new StringBuilder();
 
             def.append("(");
-            String prefix = "";
 
-            for (SolidityParameter annotationParameter : annotationMethodConfig.outParameters()) {
-                def.append(prefix);
-                prefix = ",";
+            String comma = "";
+            for (SolidityParameter annotationParameter : methodConfig.outParameters()) {
+                def.append(comma);
+                comma = ",";
                 def.append(annotationParameter.type());
 
                 config.addOutParameter(annotationParameter.name(), annotationParameter.type());
@@ -67,11 +80,6 @@ public class ConfigurationsReader {
 
             config.getOut().setDefinition(def.toString());
         }
-
-    }
-
-    public void createComplexConfiguration(Class clazz) {
-
     }
 
 }
