@@ -14,14 +14,19 @@ import com.oz.ethereum.rpc.client.serialize.annotations.SolidityType;
 
 @MethodConfiguration(id = "readOnlyMethod", methodName = "readOnlyMethod",
     inParameters = {
-        @SolidityParameter(name = "userAddress", type = SolidityType.ADDRESS),
         @SolidityParameter(name = "isAdult", type = SolidityType.BOOL),
         @SolidityParameter(name = "username", type = SolidityType.STRING),
+        @SolidityParameter(name = "firstName", type = SolidityType.STRING),
+        @SolidityParameter(name = "lastName", type = SolidityType.STRING),
+        @SolidityParameter(name = "userAddress", type = SolidityType.ADDRESS),
+        @SolidityParameter(name = "email", type = SolidityType.BYTES),
+        @SolidityParameter(name = "age", type = SolidityType.UINT),
     },
     outParameters = {
+        @SolidityParameter(name = "isAdult", type = SolidityType.BOOL),
         @SolidityParameter(name = "firsName", type = SolidityType.STRING),
         @SolidityParameter(name = "lastName", type = SolidityType.STRING),
-        @SolidityParameter(name = "age", type = SolidityType.UINT_32),
+        @SolidityParameter(name = "age", type = SolidityType.UINT),
     }
 )
 public interface ReadOnlyMethodsConfigurationTest { }

@@ -33,7 +33,7 @@ public class HexUtilsTest {
 
     @Test
     public void testZeroRightPadHexFixed() throws Exception {
-        Assert.assertEquals("Right padding is ok", textRightPadExpected, HexUtils.rightPadZeroFixed(text, 32));
+        Assert.assertEquals("Right padding is ok", textRightPadExpected, PadUtils.rightPadZeroFixed(text, 32));
     }
 
 }

@@ -13,10 +13,14 @@ import org.kocakosm.pitaya.security.Digests;
  */
 public class KeccakSigner {
 
-    public static String getMethodId(String method) {
+    public static String sha3(String input) {
+        return sha3(input.getBytes());
+    }
+
+    public static String sha3(byte[] input) {
         Digest sha3 = Digests.keccak256();
-        byte[] hash = sha3.digest(method.getBytes());
-        return Constants.HEX_PREFIX + Hex.encodeHexString(hash);
+        byte[] hash = sha3.digest(input);
+        return Hex.encodeHexString(hash);
     }
 
 }

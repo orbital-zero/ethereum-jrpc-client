@@ -1,13 +1,16 @@
 package com.oz.ethereum.rpc.client.serialize;
 
 import com.oz.utils.Constants;
-import com.oz.utils.HexUtils;
+import com.oz.utils.PadUtils;
+import com.oz.utils.StringUtils;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -30,53 +33,84 @@ public class DataABIEncoder {
         this.configsLoader = configsLoader;
     }
 
-    public <T, X> String encode(String methodId, T objectData) {
+    public <T, X> String splitLists(String methodId, T objectData) {
         final Configuration config = this.configsLoader.getConfigs(methodId);
 
-        List<String> data = new ArrayList<>();
-        List<String> headers = new ArrayList<>();
+        List<String> dataList = new ArrayList<>();
+        List<String> dynamicDataList = new ArrayList<>();
 
         StringBuffer encodedBuffer = new StringBuffer(Constants.HEX_PREFIX);
         encodedBuffer.append(config.getIn().getKeccak().substring(0, 8));
 
-        Long tmpSize = 0L;
         for (Configuration.Parameter param : config.getIn().getParameters()) {
+            String data = null;
+            String dynamicData = null;
+
             switch (param.getSolidityType()) {
-                case STRING: {
+                case STRING: case BYTES: {
                     String value = this.getValue(objectData, param.getAttributeName());
-                    String hexValue = String.format("%x", new BigInteger(1, value.getBytes()));
-                    data.add(this.serializeStringAbi(hexValue));
-                    headers.add("L" + hexValue.length());
+                    value = StringUtils.isNotEmpty(value) ? value : StringUtils.EMPTY;
+
+                    final String hexValue = String.format("%x", new BigInteger(1, value.getBytes()));
+                    dynamicData = this.serializeStaticNumberAbi(hexValue.length() / 2) +
+                                  this.serializeStringAbi(hexValue);
                     break;
                 }
                 case BOOL: {
-                    Boolean value = this.getValue(objectData, param.getAttributeName());
-                    data.add(this.serializeStaticNumberAbi(value ? 1 : 0));
-                    headers.add(null);
+                    boolean value = this.getValue(objectData, param.getAttributeName());
+                    data = this.serializeStaticNumberAbi(value ? 1 : 0);
                     break;
                 }
-                case UINT: case UINT_8: {
-                    Integer value = this.getValue(objectData, param.getAttributeName());
-                    data.add(this.serializeStaticNumberAbi(value));
-                    headers.add(null);
+                case UINT: case UINT_8: case UINT_32: {
+                    int value = this.getValue(objectData, param.getAttributeName());
+                    data = this.serializeStaticNumberAbi(value);
                     break;
-                }
-                case UINT_32: case UINT_256: {
-                    Long value = this.getValue(objectData, param.getAttributeName());
-                    data.add(this.serializeStaticNumberAbi(value));
-                    headers.add(null);
-                    break;
-                }
-                case ADDRESS: {
+                } case UINT_256: case ADDRESS: {
                     BigInteger value = this.getValue(objectData, param.getAttributeName());
-                    data.add(this.serializeStaticNumberAbi(value));
-                    headers.add(null);
+
+                    value = value != null ? value : new BigInteger(StringUtils.EMPTY);
+
+                    data = this.serializeStaticNumberAbi(value);
                     break;
                 }
             }
+
+            dataList.add(data);
+            dynamicDataList.add(dynamicData);
         }
 
-        return null;
+        return this.splitLists(encodedBuffer, dataList, dynamicDataList);
+    }
+
+    private String splitLists(StringBuffer encodedBuffer, List<String> dataList, final List<String> dynamicDataList) {
+        int dynamicDataByteIndex = dataList.size() * Constants.BLOCK_SIZE;
+
+        for(int index = 0; index < dataList.size(); index++) {
+            String data = dataList.get(index);
+
+            if (StringUtils.isEmpty(data)) {
+                // This includes the length and data
+                final String dynamicData = dynamicDataList.get(index);
+                int bytesLengthData = (dynamicData.length() / (Constants.BLOCK_SIZE * 2)) * Constants.BLOCK_SIZE;
+
+                // Setting start of dynamic block
+                dataList.set(index, this.serializeStaticNumberAbi(dynamicDataByteIndex));
+
+                // Adding size header + length data
+                dynamicDataByteIndex += bytesLengthData;
+            }
+        }
+
+        encodedBuffer.append(this.splitList(dataList));
+        encodedBuffer.append(this.splitList(dynamicDataList));
+
+        return encodedBuffer.toString();
+    }
+
+    private String splitList(final List<String> list) {
+        return list.stream().map(item -> {
+            return StringUtils.isNotEmpty(item) ? item : StringUtils.EMPTY;
+        }).collect(Collectors.joining(StringUtils.EMPTY));
     }
 
     public <T> T decode(String data, Class<T> clazz) {
@@ -84,19 +118,21 @@ public class DataABIEncoder {
     }
 
     private <T extends Number> String serializeStaticNumberAbi(T value) {
-        return HexUtils.leftPadZeroFixed(String.format("%x", value), Constants.BLOCK_SIZE);
+        return PadUtils.leftPadZeroFixed(value, Constants.BLOCK_SIZE);
     }
 
     private String serializeStringAbi(String value) {
-        return HexUtils.rightPadZeroFixed(value, Constants.BLOCK_SIZE);
+        return PadUtils.rightPadZeroFixed(value, Constants.BLOCK_SIZE);
     }
 
     public <T, U> U getValue(T objectData, String attributeName) {
         U value = null;
         try {
-            value = (U) objectData.getClass().getField(attributeName).get(objectData);
+            Field field = objectData.getClass().getDeclaredField(attributeName);
+            field.setAccessible(true);
+            value = (U) field.get(objectData);
         } catch (IllegalAccessException | NoSuchFieldException mulExc) {
-            log.warn("The attribute {} is nor present or is inaccesibble in the class {}", attributeName, objectData.getClass().getName());
+            log.warn("The attribute {} is nor present or is not present in the class {}", attributeName, objectData.getClass().getName());
         }
         return value;
     }

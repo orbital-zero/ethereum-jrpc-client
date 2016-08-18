@@ -36,7 +36,7 @@ public class EthereumMethods {
         request.setId(this.generateRandomId());
         request.setMethod(OperationType.CALL);
 
-        request.getParams().add(this.dataAbiEncoder.encode(methodId, data));
+        request.getParams().add(this.dataAbiEncoder.splitLists(methodId, data));
         request.getParams().add("latest");
 
         T response = null;

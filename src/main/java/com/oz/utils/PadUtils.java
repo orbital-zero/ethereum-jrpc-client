@@ -6,16 +6,14 @@ package com.oz.utils;
  * @author <a href="mailto:samuel.quintana@globant.com">samuel</a>
  * @since 0.1.0
  */
-public class HexUtils {
+public class PadUtils {
 
-    private static final int PAD_LIMIT = 8192;
-
-    public static String leftPadZeroFixed(final String value, final int bytesLength) {
-        return String.format("%0" + (bytesLength * 2) + "x", value);
+    public static <T extends Number> String leftPadZeroFixed(final T decimalValue, final int bytesLength) {
+        return String.format("%0" + (bytesLength * 2) + "x", decimalValue);
     }
 
     public static String rightPadZeroFixed(String hexString, final int bytesLength) {
-        final int mod = hexString.length() % bytesLength * 2;
+        final int mod = hexString.length() % (bytesLength * 2);
         if (mod == 0) return hexString;
         return String.format("%1$-" + (hexString.length() + ((bytesLength * 2) - mod)) + "s", hexString).replace(StringUtils.SPACE, "0");
     }
