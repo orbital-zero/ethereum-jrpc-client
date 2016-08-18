@@ -8,6 +8,8 @@ package com.oz.utils;
  */
 public class StringUtils {
 
+    public static final String SPACE = " ";
+
     public static boolean isEmpty(final String string) {
         return string == null || string.length() == 0;
     }

@@ -10,4 +10,6 @@ public interface Constants {
 
     String HEX_PREFIX = "0x";
 
+    int BLOCK_SIZE = 32;
+
 }

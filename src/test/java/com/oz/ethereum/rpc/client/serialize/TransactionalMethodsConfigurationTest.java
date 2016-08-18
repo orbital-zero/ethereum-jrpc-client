@@ -13,13 +13,13 @@ import lombok.Data;
  * @since 1.0
  */
 @MethodsConfiguration(configurations = {
-        @MethodConfiguration(name = "transactionalMethodOne", inParameters = {
+        @MethodConfiguration(id = "transactionalMethodOne", methodName = "transactionalMethodOne", inParameters = {
                 @SolidityParameter(name = "y", type = SolidityType.UINT_32),
                 @SolidityParameter(name = "y", type = SolidityType.UINT_32),
                 @SolidityParameter(name = "y", type = SolidityType.UINT_32),
                 @SolidityParameter(name = "y", type = SolidityType.UINT_32),
         }),
-        @MethodConfiguration(name = "transactionalMethodTwo", inParameters = {
+        @MethodConfiguration(id = "transactionalMethodTwo", methodName = "transactionalMethodTwo", inParameters = {
                 @SolidityParameter(name = "y", type = SolidityType.UINT_32),
                 @SolidityParameter(name = "y", type = SolidityType.UINT_32),
                 @SolidityParameter(name = "y", type = SolidityType.UINT_32),
