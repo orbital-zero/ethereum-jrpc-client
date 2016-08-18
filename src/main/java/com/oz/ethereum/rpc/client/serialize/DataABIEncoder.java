@@ -39,12 +39,13 @@ public class DataABIEncoder {
         StringBuffer encodedBuffer = new StringBuffer(Constants.HEX_PREFIX);
         encodedBuffer.append(config.getIn().getKeccak().substring(0, 8));
 
+        Long tmpSize = 0L;
         for (Configuration.Parameter param : config.getIn().getParameters()) {
             switch (param.getSolidityType()) {
                 case STRING: {
                     String value = this.getValue(objectData, param.getAttributeName());
                     String hexValue = String.format("%x", new BigInteger(1, value.getBytes()));
-                    data.add(HexUtils.rightPadZeroFixed(hexValue, Constants.BLOCK_SIZE));
+                    data.add(this.serializeStringAbi(hexValue));
                     headers.add("L" + hexValue.length());
                     break;
                 }
@@ -78,12 +79,16 @@ public class DataABIEncoder {
         return null;
     }
 
-    public <T> T decode(String data, Class<T> clazzs) {
+    public <T> T decode(String data, Class<T> clazz) {
         return null;
     }
 
     private <T extends Number> String serializeStaticNumberAbi(T value) {
-        return null;//HexUtils.zeroLeftPadHex(value);
+        return HexUtils.leftPadZeroFixed(String.format("%x", value), Constants.BLOCK_SIZE);
+    }
+
+    private String serializeStringAbi(String value) {
+        return HexUtils.rightPadZeroFixed(value, Constants.BLOCK_SIZE);
     }
 
     public <T, U> U getValue(T objectData, String attributeName) {

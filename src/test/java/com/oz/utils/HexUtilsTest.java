@@ -13,7 +13,7 @@ import org.junit.Test;
 @Slf4j
 public class HexUtilsTest {
 
-    private static final String text = "Hola mundo, hola mundo, hola mundo, hola mundo, hola mundo, hola mundo, hola mundo, hola mundo, hola mundo, hola mundo, hola mundo";
+    private static final String text = "486f6c61206d756e646f2c20686f6c61206d756e646f2c20686f6c61206d756e646f2c20686f6c61206d756e646f2c20686f6c61206d756e646f2c20686f6c61206d756e646f2c20686f6c61206d756e646f2c20686f6c61206d756e646f2c20686f6c61206d756e646f2c20686f6c61206d756e646f2c20686f6c61206d756e646f";
     private static final String textRightPadExpected = "486f6c61206d756e646f2c20686f6c61206d756e646f2c20686f6c61206d756e646f2c20686f6c61206d756e646f2c20686f6c61206d756e646f2c20686f6c61206d756e646f2c20686f6c61206d756e646f2c20686f6c61206d756e646f2c20686f6c61206d756e646f2c20686f6c61206d756e646f2c20686f6c61206d756e646f000000000000000000000000000000000000000000000000000000000000";
 
     @Test
@@ -33,6 +33,7 @@ public class HexUtilsTest {
 
     @Test
     public void testZeroRightPadHexFixed() throws Exception {
-        Assert.assertEquals(textRightPadExpected, HexUtils.rightPadZeroFixed(text.getBytes(), 32));
+        Assert.assertEquals("Right padding is ok", textRightPadExpected, HexUtils.rightPadZeroFixed(text, 32));
     }
+
 }
