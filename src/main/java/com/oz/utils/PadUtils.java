@@ -9,7 +9,7 @@ package com.oz.utils;
 public class PadUtils {
 
     public static <T extends Number> String leftPadZeroFixed(final T decimalValue, final int bytesLength) {
-        return String.format("%0" + (bytesLength * 2) + "x", decimalValue);
+        return String.format("%0" + (bytesLength * 2) + "x", decimalValue != null ? decimalValue : new Byte((byte) 0));
     }
 
     public static String rightPadZeroFixed(String hexString, final int bytesLength) {

@@ -1,6 +1,6 @@
 package com.oz.ethereum.rpc.client.serialize;
 
-import com.oz.encrypt.KeccakSigner;
+import com.oz.encrypt.KeccakUtils;
 import com.oz.ethereum.rpc.client.serialize.annotations.MethodConfiguration;
 import com.oz.ethereum.rpc.client.serialize.annotations.MethodsConfiguration;
 import com.oz.ethereum.rpc.client.serialize.annotations.SolidityParameter;
@@ -59,7 +59,7 @@ public class ConfigurationsReader {
             final String solvedDefinition = def.toString();
 
             config.getIn().setDefinition(solvedDefinition);
-            config.getIn().setKeccak(KeccakSigner.getMethodId(solvedDefinition));
+            config.getIn().setKeccak(KeccakUtils.sha3(solvedDefinition));
         }
 
         // Processing OUT parameters [(uint,address)]

@@ -11,7 +11,7 @@ import org.kocakosm.pitaya.security.Digests;
  * @author <a href="mailto:sock.sqt@gmail.com">samuel</a>
  * @since 0.1.0
  */
-public class KeccakSigner {
+public class KeccakUtils {
 
     public static String sha3(String input) {
         return sha3(input.getBytes());

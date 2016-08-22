@@ -1,6 +1,6 @@
 package com.oz.ethereum.rpc.client;
 
-import com.oz.encrypt.KeccakSigner;
+import com.oz.encrypt.KeccakUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -39,7 +39,7 @@ public class Transaction {
         }
 
         byte[] plainMsg = {};// = this.getEncodedRaw();
-        return KeccakSigner.sha3(plainMsg).getBytes();
+        return KeccakUtils.sha3(plainMsg).getBytes();
     }
 
 }

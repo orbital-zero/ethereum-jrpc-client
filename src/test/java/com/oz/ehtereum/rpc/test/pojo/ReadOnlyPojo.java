@@ -22,5 +22,6 @@ public class ReadOnlyPojo {
     private String lastName;
     private String email;
     private Integer id;
+    private Integer age;
 
 }

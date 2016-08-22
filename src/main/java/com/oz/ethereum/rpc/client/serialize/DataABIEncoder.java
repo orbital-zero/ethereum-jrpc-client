@@ -3,12 +3,14 @@ package com.oz.ethereum.rpc.client.serialize;
 import com.oz.utils.Constants;
 import com.oz.utils.PadUtils;
 import com.oz.utils.StringUtils;
+import com.sun.tools.internal.jxc.ap.Const;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,7 +35,7 @@ public class DataABIEncoder {
         this.configsLoader = configsLoader;
     }
 
-    public <T, X> String splitLists(String methodId, T objectData) {
+    public <T, X> String encode(String methodId, T objectData) {
         final Configuration config = this.configsLoader.getConfigs(methodId);
 
         List<String> dataList = new ArrayList<>();
@@ -62,14 +64,11 @@ public class DataABIEncoder {
                     break;
                 }
                 case UINT: case UINT_8: case UINT_32: {
-                    int value = this.getValue(objectData, param.getAttributeName());
+                    Integer value = this.getValue(objectData, param.getAttributeName());
                     data = this.serializeStaticNumberAbi(value);
                     break;
                 } case UINT_256: case ADDRESS: {
                     BigInteger value = this.getValue(objectData, param.getAttributeName());
-
-                    value = value != null ? value : new BigInteger(StringUtils.EMPTY);
-
                     data = this.serializeStaticNumberAbi(value);
                     break;
                 }
@@ -113,8 +112,55 @@ public class DataABIEncoder {
         }).collect(Collectors.joining(StringUtils.EMPTY));
     }
 
-    public <T> T decode(String data, Class<T> clazz) {
-        return null;
+    public <T> void decode(String methodId, String hexReponse, T objectIntance) {
+        final Configuration config = this.configsLoader.getConfigs(methodId);
+
+        if (hexReponse.length() <= 4) {
+            log.info("");
+            return;
+        }
+
+        String[] rawParams = hexReponse.replace(Constants.HEX_PREFIX, StringUtils.EMPTY).split("(?<=\\G.{64})");
+
+        int rawParamsIndex = 0;
+        for (Configuration.Parameter parameter : config.getOut().getParameters()) {
+            switch (parameter.getSolidityType()) {
+                case STRING: case BYTES: {
+                    int initBlockIndex = Integer.parseInt(rawParams[rawParamsIndex], 16) / 32;
+                    int strLength = Integer.parseInt(rawParams[initBlockIndex], 16) * 2;
+
+                    int initStrValueIndex = initBlockIndex + 1; // The first row is the string's length
+                    int endStrValueIndex = strLength <= 64 ? initStrValueIndex : initStrValueIndex + (strLength / 32);
+
+                    String rawHexStr = Arrays.toString(Arrays.copyOfRange(rawParams, initStrValueIndex, endStrValueIndex + 1));
+                    String rawSegment = rawHexStr.replaceAll(",| ", StringUtils.EMPTY).substring(1, strLength + 1);
+
+                    this.setValue(objectIntance, strLength == 0 ? StringUtils.EMPTY : hexToASCII(rawSegment), parameter.getAttributeName())
+                    break;
+                }
+                case UINT: case UINT_8: case UINT_32: {
+                    Integer value = Integer.parseInt(rawParams[rawParamsIndex], 16);
+                    this.setValue(objectIntance, value, parameter.getAttributeName());
+                    break;
+                }
+                case UINT_256: {
+                    Integer value = Integer.parseInt(rawParams[rawParamsIndex], 16);
+                    this.setValue(objectIntance, value, parameter.getAttributeName());
+                    break;
+                }
+                case ADDRESS: {
+                    BigInteger value = new BigInteger(rawParams[rawParamsIndex], 16);
+                    this.setValue(objectIntance, value, parameter.getAttributeName());
+                    break;
+                }
+                case BOOL: {
+                    Boolean value = Integer.parseInt(rawParams[rawParamsIndex], 16) == 1;
+                    this.setValue(objectIntance, value, parameter.getAttributeName());
+                    break;
+                }
+            }
+            rawParamsIndex++;
+        }
     }
 
     private <T extends Number> String serializeStaticNumberAbi(T value) {
@@ -135,6 +181,16 @@ public class DataABIEncoder {
             log.warn("The attribute {} is nor present or is not present in the class {}", attributeName, objectData.getClass().getName());
         }
         return value;
+    }
+
+    public <T, U> void setValue(T objectData, final U value, final String attributeName) {
+        try {
+            Field field = objectData.getClass().getDeclaredField(attributeName);
+            field.setAccessible(true);
+            field.set(objectData, value);
+        } catch (IllegalAccessException | NoSuchFieldException mulExc) {
+            log.warn("The attribute {} is nor present or is not present in the class {}", attributeName, objectData.getClass().getName());
+        }
     }
 
 }
