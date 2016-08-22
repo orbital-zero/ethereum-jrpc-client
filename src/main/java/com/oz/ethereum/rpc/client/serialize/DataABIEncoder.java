@@ -3,9 +3,9 @@ package com.oz.ethereum.rpc.client.serialize;
 import com.oz.utils.Constants;
 import com.oz.utils.PadUtils;
 import com.oz.utils.StringUtils;
-import com.sun.tools.internal.jxc.ap.Const;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Hex;
 
 import java.lang.reflect.Field;
 import java.math.BigInteger;
@@ -135,7 +135,7 @@ public class DataABIEncoder {
                     String rawHexStr = Arrays.toString(Arrays.copyOfRange(rawParams, initStrValueIndex, endStrValueIndex + 1));
                     String rawSegment = rawHexStr.replaceAll(",| ", StringUtils.EMPTY).substring(1, strLength + 1);
 
-                    this.setValue(objectIntance, strLength == 0 ? StringUtils.EMPTY : hexToASCII(rawSegment), parameter.getAttributeName())
+                    this.setValue(objectIntance, strLength == 0 ? StringUtils.EMPTY : Hex.encodeHexString(rawSegment.getBytes()), parameter.getAttributeName());
                     break;
                 }
                 case UINT: case UINT_8: case UINT_32: {

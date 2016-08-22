@@ -1,8 +1,13 @@
 package com.oz.ethereum.rpc.client;
 
-import com.oz.encrypt.KeccakUtils;
+import com.oz.utils.Constants;
+import com.oz.utils.StringUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.apache.commons.codec.binary.Hex;
+import org.spongycastle.util.BigIntegers;
+
+import java.math.BigInteger;
 
 /**
  *
@@ -14,32 +19,55 @@ import lombok.Data;
 @AllArgsConstructor
 public class Transaction {
 
-    private String from;
-    private String to;
-    private Long gas;
-    private Long gasPrice;
-    private Long quantity;
+    private static final BigInteger DEFAULT_GAS_PRICE = new BigInteger("20000000000");
+    private static final BigInteger DEFAULT_GAS_LIMIT = new BigInteger("2000000");
+
+    private BigInteger from;
+    private BigInteger to;
+    private BigInteger gas;
+    private BigInteger gasPrice;
+    private BigInteger value;
     private String data;
-    private Long nonce;
+    private BigInteger nonce;
+    private BigInteger hash;
+    private String input;
+    private BigInteger transactionIndex;
+    private BigInteger blockHash;
+    private BigInteger blockNumber;
 
-    protected boolean parsed;
-    //private ECKey.ECDSASignature signature;
-    protected byte[] rlpEncoded;
+    private String encodedTransaction;
 
-    public void sign(String privKeyBytes) {
-        byte[] hash = this.getRawHash();
-        //ECKey key = ECKey.fromPrivate(privKeyBytes.getBytes()).decompress();
-        //this.signature = key.sign(hash);
-        //this.rlpEncoded = null;
+    public Transaction() {
+        super();
+        this.gasPrice = DEFAULT_GAS_PRICE;
+        this.gas = DEFAULT_GAS_LIMIT;
     }
 
-    public byte[] getRawHash() {
-        if(!this.parsed) {
-            //this.rlpParse();
-        }
+    public Transaction(final BigInteger gasPrice, final BigInteger gasLimit) {
+        super();
+        this.gasPrice = gasPrice;
+        this.gas = gasLimit;
+    }
 
-        byte[] plainMsg = {};// = this.getEncodedRaw();
-        return KeccakUtils.sha3(plainMsg).getBytes();
+    public void sign(final BigInteger privKeyBytes) {
+        byte[] privateKey = BigIntegers.asUnsignedByteArray(privKeyBytes);
+        byte[] nonce = BigIntegers.asUnsignedByteArray(this.nonce);
+        byte[] gasPrice = BigIntegers.asUnsignedByteArray(this.gasPrice);
+        byte[] gasLimit = BigIntegers.asUnsignedByteArray(this.gas);
+        byte[] toAddress = BigIntegers.asUnsignedByteArray(this.to);
+        byte[] value = BigIntegers.asUnsignedByteArray(this.value);
+        byte[] data = org.spongycastle.util.encoders.Hex.decode(this.data.replaceFirst(Constants.HEX_PREFIX, StringUtils.EMPTY));
+
+        org.ethereum.core.Transaction rawTransaction = new org.ethereum.core.Transaction(
+                nonce,
+                gasPrice,
+                gasLimit,
+                toAddress,
+                value,
+                data);
+
+        rawTransaction.sign(privateKey);
+        this.encodedTransaction = Hex.encodeHexString(rawTransaction.getEncoded());
     }
 
 }

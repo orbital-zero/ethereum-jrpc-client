@@ -10,6 +10,8 @@ public enum OperationType {
 
     CALL("call"),
     SEND_RAW_TRANSACTION("eth_sendRawTransaction"),
+    GET_TRANSACTION_COUNT("eth_getTransactionCount"),
+    GET_TRANSACTION_BY_HASH("eth_getTransactionByHash"),
     ;
 
     private String operationType;
